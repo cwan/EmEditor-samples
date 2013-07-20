@@ -1,45 +1,160 @@
 // Convert text CSV to TSV
 
-// TODO escape & unescape
-// TODO multi line
+var _reEscapeTest = new RegExp('[\t\r\n"]');
+var _reEscapeQuote = new RegExp('"', 'g');
+var _reUnescapeQuote = new RegExp('""', 'g');
 
 var _selection = document.selection;
 
-main();
+_selection.SelectAll();
 
-function main() {
+var rows = parse(_selection.Text);
 
-	var lineText;
-	var items;
-	
-	// initialize
-	_selection.StartOfDocument();
-	
-	while ((lineText = nextLine()) !== null) {
-		
-		items = lineText.split(',');
-		
-		_selection.Text = items.join('\t');
-	}
-	
-	_selection.Collapse();
-	
-	
-	if (confirm('View in TSV mode?')) {
-		editor.ExecuteCommandByID(4471);
-	}
+_selection.Text = format(rows);;
+
+if (confirm('View in TSV mode?')) {
+	editor.ExecuteCommandByID(4471);
 }
 
-function nextLine() {
+function parse(allText) {
+
+	var i;
+	var len;
+	var char;
+	var nextChar = null;
+	var item = '';
+	var rows = [];
+	var columns = [];
+	var inQuote = false;
 	
-	var beforePos = _selection.GetActivePointY(eePosLogical);
-	_selection.LineDown(1);
-	
-	if (beforePos === _selection.GetActivePointY(eePosLogical)) {
-		return null;
+	for (i = 0, len = allText.length; i < len; i++) {
+		
+		char = allText.charAt(i);
+		nextChar = i < len - 1 ? allText.charAt(i + 1) : null;
+		
+		switch (char) {
+			
+			case '\r':
+			
+				if (inQuote) {
+					item += char;
+					
+				} else {
+					if (nextChar === '\n') {
+						i++;
+					}
+					
+					columns.push(unescape(item));
+					rows.push(columns);
+					columns = [];
+					item = '';
+				}
+				
+				break;
+			
+			case '\n':
+			
+				if (inQuote) {
+					item += char;
+					
+				} else {
+					columns.push(item);
+					rows.push(columns);
+					columns = [];
+					item = '';
+				}
+				
+				break;
+				
+			case ',':
+			
+				if (inQuote) {
+					item += char;
+					
+				} else {
+					columns.push(unescape(item));
+					item = '';
+				}
+				
+				break;
+			
+			case '"':
+				
+				if (inQuote) {
+					
+					if (nextChar === '"') {
+						item += '""';
+						i++;
+					} else {
+						item += '"';
+						inQuote = false;
+					}
+				
+				} else {
+					
+					item += char;
+					inQuote = true;
+				}
+					
+				break;
+			
+			default:
+				item += char;
+		}
 	}
 	
-	_selection.SelectLine();
+	if (item) {
+		columns.push(unescape(item));
+	}
 	
-	return _selection.Text;
+	if (columns.length > 0) {
+		rows.push(columns);
+	}
+	
+	return rows;
+}
+
+function format(rows) {
+	
+	var i, j, rowLen, colLen, columns;
+	var tmpRow = [], tmpColumn;
+	
+	for (i = 0, rowLen = rows.length; i < rowLen; i++) {
+		
+		columns = rows[i];
+		
+		tmpColumn = [];
+		
+		for (j = 0, colLen = columns.length; j < colLen; j++) {
+			
+			tmpColumn.push(escape(columns[j]));
+		}
+		
+		tmpRow.push(tmpColumn.join('\t'));
+	}
+	
+	return tmpRow.join('\r\n');
+}
+
+function unescape(item) {
+	
+	if (item.length > 0 && item.charAt(0) === '"') {
+		item = item.substr(1);
+	}
+	
+	if (item.length > 0 && item.charAt(item.length - 1) === '"') {
+		item = item.substr(0, item.length - 1);
+	}
+	
+	return item.replace(_reUnescapeQuote, '"');
+}
+
+function escape(item) {
+	
+	if (_reEscapeTest.test(item)) {
+		return '"' + item.replace(_reEscapeQuote, '""') + '"';
+		
+	} else {
+		return item;
+	}
 }

@@ -1,144 +1,18 @@
 // Apache access log to TSV
+	
+// separate items (combined format)
+document.selection.Replace(
+	'^(.*?) (.*?) (.*?) \\[(.*?)\\] "(.*?)" (.*?) (.*?) "(.*?)" "(.*?)"'
+	, '$1\t$2\t$3\t$4\t$5\t$6\t$7\t$8\t$9'
+	, eeFindNext | eeFindSaveHistory | eeFindReplaceEscSeq | eeReplaceAll | eeFindReplaceRegExp);
 
-// TODO variable format (selected by user)
-// TODO time format
+// separate the 1st line of request
+document.selection.Replace(
+	'^(.*?\\\t.*?\\\t.*?\\t.*?\\t)(.*?) (.*?) (.*?)(.*)'
+	, '$1$2\t$3\t$4$5'
+	, eeFindNext | eeFindSaveHistory | eeFindReplaceEscSeq | eeReplaceAll | eeFindReplaceRegExp);
 
-var _selection = document.selection;
-//var _logFormat = '%h %l %u %t "%r" %s %b "%{Referer}i" "%{User-Agent}i"';	// combined
-var _reLogLine;
-var _reTime;
-var MONTH = {
-	"Jan" : "01"
-	, "Feb" : "02"
-	, "Mar" : "03"
-	, "Apr" : "04"
-	, "May" : "05"
-	, "Jun" : "06"
-	, "Jul" : "07"
-	, "Aug" : "08"
-	, "Sep" : "09"
-	, "Oct" : "10"
-	, "Nov" : "11"
-	, "Dec" : "12s"
-};
-
-main();
-
-function main() {
-
-	var line;
-	var items;
-	var log;
-	
-	// initialize
-	createRegExp();
-	_selection.StartOfDocument();
-	
-	
-	while ((line = nextLine()) !== null) {
-		
-		log = parseLog(line);
-		
-		if (log) {
-		//	_selection.Delete()
-		//	document.writeln(formatLine(log));
-			_selection.Text = formatLine(log) + "\r\n";
-		}
-	}
-	
-	_selection.Collapse();
-	
-	
-	if (confirm('View in TSV mode?')) {
-		editor.ExecuteCommandByID(4471);
-	}
+if (confirm('View in TSV mode?')) {
+	editor.ExecuteCommandByID(4471);
 }
 
-function nextLine() {
-	
-	var beforePos = _selection.GetActivePointY(eePosLogical);
-	_selection.LineDown(1);
-	
-	if (beforePos === _selection.GetActivePointY(eePosLogical)) {
-		return null;
-	}
-	
-	_selection.SelectLine();
-	
-	return _selection.Text;
-}
-
-function createRegExp() {
-	
-	_reLogLine = RegExp('^(.*?) (.*?) (.*?) (.*?) "(.*?)" (.*?) (.*?) "(.*?)" "(.*?)"');
-	_reTime = '\\[(..)/(...)/(....):(........).*\\]';
-}
-
-function parseLog(line) {
-	
-	var groups = line.match(_reLogLine);
-	
-	if (groups) {
-		
-		var remoteHost = groups[1];
-		var remoteLogName = groups[2];
-		var remoteUser = groups[3];
-		var dateTime = groups[4];
-		var firstLineOfReq = groups[5];
-		var status = groups[6];
-		var sizeOfResInByte = groups[7];
-		var referer = groups[8];
-		var userAgent = groups[9];
-		
-		var firstLineOfReqs = firstLineOfReq.split(' ');
-		
-		return {
-			remoteHost : remoteHost
-			, remoteLogName : remoteLogName
-			, remoteUser : remoteUser
-			, dateTime : dateTime
-			, firstLineOfReq : firstLineOfReq
-			, method : firstLineOfReqs.length > 0 ? firstLineOfReqs[0] : ""
-			, uri : firstLineOfReqs.length > 1 ? firstLineOfReqs[1] : ""
-			, httpVer : firstLineOfReqs.length > 2 ? firstLineOfReqs[2] : ""
-			, status : status
-			, sizeOfResInByte : sizeOfResInByte
-			, referer : referer
-			, userAgent : userAgent
-		};
-		
-	} else {
-		return null;
-	}
-}
-
-function formatLine(log) {
-	
-	return [ log.remoteHost, log.remoteLogName
-		, log.remoteUser
-		, formatDateTime(log.dateTime)
-		, log.method
-		, log.uri
-		, log.httpVer
-		, log.status
-		, log.sizeOfResInByte
-		, log.referer
-		, log.userAgent
-	].join('\t');
-}
-
-function formatDateTime(dateTime) {
-	
-	var groups = dateTime.match(_reTime);
-	
-	if (groups) {
-		var dayOfMonth = groups[1];
-		var month = MONTH[groups[2]];
-		var year = groups[3];
-		var time = groups[4];
-		
-		return year + "/" + month + "/" + dayOfMonth + " " + time;
-	}
-	
-	return dateTime;
-}
