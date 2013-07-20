@@ -1,0 +1,45 @@
+// Convert text CSV to TSV
+
+// TODO escape & unescape
+// TODO multi line
+
+var _selection = document.selection;
+
+main();
+
+function main() {
+
+	var lineText;
+	var items;
+	
+	// initialize
+	_selection.StartOfDocument();
+	
+	while ((lineText = nextLine()) !== null) {
+		
+		items = lineText.split(',');
+		
+		_selection.Text = items.join('\t');
+	}
+	
+	_selection.Collapse();
+	
+	
+	if (confirm('View in TSV mode?')) {
+		editor.ExecuteCommandByID(4471);
+	}
+}
+
+function nextLine() {
+	
+	var beforePos = _selection.GetActivePointY(eePosLogical);
+	_selection.LineDown(1);
+	
+	if (beforePos === _selection.GetActivePointY(eePosLogical)) {
+		return null;
+	}
+	
+	_selection.SelectLine();
+	
+	return _selection.Text;
+}
