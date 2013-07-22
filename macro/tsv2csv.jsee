@@ -29,7 +29,7 @@ function parse(allText) {
 	
 	for (i = 0, len = allText.length; i < len; i++) {
 		
-		char = allText.charAt(i);
+		char = nextChar !== null ? nextChar : allText.charAt(i);
 		nextChar = i < len - 1 ? allText.charAt(i + 1) : null;
 		
 		switch (char) {
@@ -42,6 +42,7 @@ function parse(allText) {
 				} else {
 					if (nextChar === '\n') {
 						i++;
+						nextChar = null;
 					}
 					
 					columns.push(unescape(item));
@@ -85,6 +86,7 @@ function parse(allText) {
 					if (nextChar === '"') {
 						item += '""';
 						i++;
+						nextChar = null;
 					} else {
 						item += '"';
 						inQuote = false;

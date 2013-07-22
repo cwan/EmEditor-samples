@@ -12,6 +12,8 @@ document.selection.Replace(
 	, '$1$2\t$3\t$4$5'
 	, eeFindNext | eeFindSaveHistory | eeFindReplaceEscSeq | eeReplaceAll | eeFindReplaceRegExp);
 
+document.HighlightFind = false;
+
 if (confirm('View in TSV mode?')) {
 	editor.ExecuteCommandByID(4471);
 }
