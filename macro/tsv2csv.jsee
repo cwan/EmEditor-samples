@@ -10,7 +10,7 @@ _selection.SelectAll();
 
 var rows = parse(_selection.Text);
 
-_selection.Text = format(rows);;
+_selection.Text = format(rows);
 
 if (confirm('View in CSV mode?')) {
 	editor.ExecuteCommandByID(4459);
