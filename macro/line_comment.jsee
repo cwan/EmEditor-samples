@@ -35,8 +35,7 @@ for (lineNo = anchorPointY; lineNo <= bottomPointY; lineNo++) {
 
 
 // select the range
-_selection.SetAnchorPoint(eePosLogical, 1, 1);
-_selection.SetActivePoint(eePosLogical, 1, 1, false);
+_selection.StartOfDocument();
 _selection.SetAnchorPoint(eePosLogical, 1, anchorPointY);
 _selection.SetActivePoint(eePosLogical, document.GetLine(bottomPointY).length + 1, bottomPointY, true);
 
