@@ -3,7 +3,7 @@
 var _selection = document.selection;
 
 
-// get the config
+// get the line characters form Config
 var highlight = document.Config.Highlight;
 var lineComment = highlight.LineComment1 || highlight.LineComment2;
 
@@ -21,11 +21,10 @@ if (_selection.GetBottomPointX(eePosLogical) === 1) {
 	bottomPointY--;
 }
 
-var lineNo;
 
-
-// check if all lines are already commented out
+// check if the all lines are already commented out
 var allCommentedOut = true;
+var lineNo;
 
 for (lineNo = anchorPointY; lineNo <= bottomPointY; lineNo++) {
 	if (document.GetLine(lineNo).indexOf(lineComment) !== 0) {
@@ -35,22 +34,33 @@ for (lineNo = anchorPointY; lineNo <= bottomPointY; lineNo++) {
 }
 
 
-// switch
-for (lineNo = anchorPointY; lineNo <= bottomPointY; lineNo++) {
-	// select a line
-	_selection.SetActivePoint(eePosLogical, 1, lineNo, false);
-	_selection.SelectLine();
-	
-	if (allCommentedOut) {
-		// remove the comment characters
-		_selection.Text = _selection.Text.substr(lineComment.length);
-	} else {
-		// add the comment characters
-		_selection.Text = lineComment + _selection.Text;
-	}
-}
-
-
-// reselect the range
+// select the range
+_selection.SetAnchorPoint(eePosLogical, 1, 1);
+_selection.SetActivePoint(eePosLogical, 1, 1, false);
 _selection.SetAnchorPoint(eePosLogical, 1, anchorPointY);
 _selection.SetActivePoint(eePosLogical, document.GetLine(bottomPointY).length + 1, bottomPointY, true);
+
+if (allCommentedOut) {
+	// remove the line comment characters
+	
+	var headCommentPattern = "^";
+	
+	for (var i = 0; i < lineComment.length; i++) {
+		headCommentPattern += '.';
+	}
+			
+	_selection.Replace(
+		headCommentPattern
+		, ''
+		, eeFindNext | eeFindSaveHistory | eeFindReplaceEscSeq | eeReplaceSelOnly | eeReplaceAll | eeFindReplaceRegExp);
+	
+} else {
+	// add the line comment characters
+	
+	_selection.Replace(
+		'^'
+		, lineComment
+		, eeFindNext | eeFindSaveHistory | eeFindReplaceEscSeq | eeReplaceSelOnly | eeReplaceAll | eeFindReplaceRegExp);
+}
+
+document.HighlightFind = false;
