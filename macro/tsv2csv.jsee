@@ -135,7 +135,9 @@ function format(rows) {
 		tmpRow.push(tmpColumn.join(','));
 	}
 	
-	return tmpRow.join('\r\n');
+	var lineSeparator = document.GetLine(1, true).match(/.*?(\r?\n?)$/)[1];
+	
+	return tmpRow.join(lineSeparator);
 }
 
 function unescape(item) {
