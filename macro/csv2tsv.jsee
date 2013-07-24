@@ -119,25 +119,28 @@ function parse(allText) {
 function format(rows) {
 	
 	var i, j, rowLen, colLen, columns;
-	var tmpRow = [], tmpColumn;
+	var lineSeparator = document.GetLine(1, true).match(/.*?(\r?\n?)$/)[1];
+	var buf = "";
 	
 	for (i = 0, rowLen = rows.length; i < rowLen; i++) {
 		
 		columns = rows[i];
 		
-		tmpColumn = [];
-		
 		for (j = 0, colLen = columns.length; j < colLen; j++) {
 			
-			tmpColumn.push(escape(columns[j]));
+			buf += escape(columns[j]);
+			
+			if (j < colLen - 1) {
+				buf += '\t';
+			}
 		}
 		
-		tmpRow.push(tmpColumn.join('\t'));
+		if (i < rowLen - 1) {
+			buf += lineSeparator;
+		}
 	}
 	
-	var lineSeparator = document.GetLine(1, true).match(/.*?(\r?\n?)$/)[1];
-	
-	return tmpRow.join(lineSeparator);
+	return buf;
 }
 
 function unescape(item) {
