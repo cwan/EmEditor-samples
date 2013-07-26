@@ -17,7 +17,7 @@ if (!lineComment) {
 var anchorPointY = _selection.GetAnchorPointY(eePosLogical);
 var bottomPointY = _selection.GetBottomPointY(eePosLogical);
 
-if (_selection.GetBottomPointX(eePosLogical) === 1) {
+if (anchorPointY !== bottomPointY && _selection.GetBottomPointX(eePosLogical) === 1) {
 	bottomPointY--;
 }
 
