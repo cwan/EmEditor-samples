@@ -1,0 +1,32 @@
+// Convert TSV to Textile table
+
+var firstRowAsHeader = confirm("Consider the first row as header?\n[OK->Yes, Cancel->No]");
+
+var _selection = document.selection;
+
+_selection.SelectAll();
+
+var rows = _selection.Text.split(/\r\n|\r|\n/);
+
+var buf = "";
+
+for (var i = 0; i < rows.length; i++) {
+	
+	var columns = rows[i].split('\t');
+	
+	buf += (firstRowAsHeader && i == 0 ? "|_. " : "| ");
+	
+	for (var j = 0; j < columns.length; j++) {
+		buf += columns[j];
+		
+		if (firstRowAsHeader && i == 0) {
+			buf += (j != columns.length - 1 ? " |_. " : " |");
+		} else {
+			buf += (j != columns.length - 1 ? "  | " : " |");
+		}
+	}
+	
+	buf += "\r\n";
+}
+
+_selection.Text = buf;

@@ -1,0 +1,20 @@
+// Convert Textile table to TSV
+
+var _selection = document.selection;
+
+_selection.SelectAll();
+
+var rows = _selection.Text.split(/\r\n|\r|\n/);
+
+var buf = "";
+
+for (var i = 0; i < rows.length; i++) {
+	
+	buf += rows[i]
+			.replace(/^\|(\_\.)?\s*/, "")
+			.replace(/\s*\|$/, "")
+			.replace(/\s*\|(\_\.)?\s*/g, "\t")
+			+ "\r\n"
+}
+
+_selection.Text = buf;
